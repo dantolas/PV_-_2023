@@ -5,7 +5,6 @@ public class Subject {
     private String shortcut;
     private Teacher teacher;
     private Classroom classroom;
-    private String floor;
     private boolean lab;
     
     public Subject(String name, String shortcut, Teacher teacher, Classroom classroom, boolean lab) {
@@ -13,7 +12,6 @@ public class Subject {
         this.shortcut = shortcut;
         this.teacher = teacher;
         this.classroom = classroom;
-        this.floor = floor;
         this.lab = lab;
     }
 

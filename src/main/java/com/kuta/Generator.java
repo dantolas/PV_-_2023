@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.random.*;
 
+
 import com.kuta.objects.Classroom;
 import com.kuta.objects.Subject;
 import com.kuta.objects.Teacher;
@@ -22,11 +23,16 @@ public class Generator implements Runnable{
         "Friday"
     };
 
-    private ArrayList<String> subjects;
+    private class SubjectNameAndLab{
+        public String name;
+        public boolean lab;
+    }
+
+    private ArrayList<SubjectNameAndLab> subjectNames;
     private HashMap<String,String> subjectShortcuts;
     private HashMap<String,ArrayList<Teacher>> subjectTeachers;
-    private HashMap<String,ArrayList<Classroom>> possibleClassroooms;
-    private int hoursPerWeek;
+    private HashMap<String,ArrayList<Classroom>> classroomsForSubjects;
+    private HashMap<String,ArrayList<Classroom>> classroomsForLabSubjects;
     
 
     @Override
@@ -34,41 +40,65 @@ public class Generator implements Runnable{
         throw new UnsupportedOperationException("Unimplemented method 'run'");
     }
 
-    
+    public Generator(String filepath){
 
+    }
+    
+    /**
+     * Generates a completely random schedule, with random subject order, random teachers and random classrooms.
+     * 
+     * Generation restrictions : 
+     *  - Only teachers that teach that subject will be chosen as subject teachers
+     *  - Only classrooms where a certain subject can be taught will be chosen
+     *  - Differentiates between practice and theory (lab = cviceni, !lab = teorie pro potreby skolniho rozvrhu)
+     *  - All subject quotas must be met (If PV is 2x a week, it must be 2x a week in a generated schedule)
+     * 
+     * @return A Hashmap with days of the week as keys, and lists of .com.kuta.ubjects.Subject as values.
+     */
     public HashMap<String,ArrayList<Subject>> generateRandomSchedule(){
 
-        ArrayList<String> subjects = this.subjects;
+        ArrayList<SubjectNameAndLab> subjects = this.subjectNames;
 
         HashMap<String,ArrayList<Subject>> schedule = new HashMap<>();
 
         for (String day : days) {
-
             
-            int hours = getRandomNumber(1,10); 
-            int i = 0;
-            while(i < hours){
-                String subjectName = subjects.get(getRandomNumber(subjects.size()));
+            ArrayList<Subject> dailySchedule = new ArrayList<>();            
 
-
-                // Subject subject = new Subject(
-                //     subjectName,
-                //     this.subjectShortcuts.get(subjectName),
-                //     getRandomTeacherForSubject(subjectName),
-
-
-
-                // );
+            if(subjects.size() == 0){
+                schedule.put(day, dailySchedule);
+                continue;
             }
 
+            int hours = 0;
+            while(true){
+                hours = getRandomNumber(1,10);
+                if(subjects.size() - hours > 0) break;
+            }
+            
+            int i = 0;
+            while(i < hours){
+                SubjectNameAndLab subjectName = subjectNames.get(getRandomNumber(this.subjectNames.size()));
 
+                Subject subject = new Subject(
+                    subjectName.name,
+                    this.subjectShortcuts.get(subjectName.name),
+                    getRandomTeacherForSubject(subjectName.name),
+                    getRandomClassroomForSubject(subjectName.name, subjectName.lab),
+                    subjectName.lab
+                );
+                dailySchedule.add(subject);
+                i++;
+            }
 
+            schedule.put(day, dailySchedule);
         }
-        return null;
+
+        return schedule;
     }
 
     /**
-     *  Method to generate random number
+     * Generate random number
      * @param range 
      * @return - Random integer in given range ranging (0,range-1)
      */
@@ -77,7 +107,7 @@ public class Generator implements Runnable{
     }
 
     /**
-     * Method to return random teacher for a subject from all teachers that teach the subject
+     * Return random teacher for a subject from all teachers that teach the subject
      * , recorded in this.subjectTeachers
      * 
      * @param subjectname
@@ -87,8 +117,15 @@ public class Generator implements Runnable{
         return this.subjectTeachers.get(subjectname).get(getRandomNumber(subjectTeachers.get(subjectname).size()));
     }
 
+    private Classroom getRandomClassroomForSubject(String subjectName,boolean lab){
+        if(lab){
+            return this.classroomsForLabSubjects.get(subjectName).get(getRandomNumber(this.classroomsForLabSubjects.get(subjectName).size()));
+        }
+        return this.classroomsForSubjects.get(subjectName).get(getRandomNumber(this.classroomsForSubjects.get(subjectName).size()));
+    }
+
     /**
-     * Method to generate random number
+     * Generate random number
      * 
      * @param min
      * @param max
