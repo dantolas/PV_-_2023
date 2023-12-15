@@ -13,7 +13,7 @@ import com.kuta.objects.Subject;
 import com.kuta.objects.Teacher;
 
 
-public class Generator implements Runnable{
+public class RandomGenerator implements Runnable{
 
     private final String[] days = {
         "Monday",
@@ -40,7 +40,7 @@ public class Generator implements Runnable{
         throw new UnsupportedOperationException("Unimplemented method 'run'");
     }
 
-    public Generator(String filepath){
+    public RandomGenerator(){
 
     }
     
@@ -117,11 +117,11 @@ public class Generator implements Runnable{
         return this.subjectTeachers.get(subjectname).get(getRandomNumber(subjectTeachers.get(subjectname).size()));
     }
 
-    private Classroom getRandomClassroomForSubject(String subjectName,boolean lab){
+    private Classroom[] getRandomClassroomForSubject(String subjectName,boolean lab){
         if(lab){
-            return this.classroomsForLabSubjects.get(subjectName).get(getRandomNumber(this.classroomsForLabSubjects.get(subjectName).size()));
+            return new Classroom[] {this.classroomsForLabSubjects.get(subjectName).get(getRandomNumber(this.classroomsForLabSubjects.get(subjectName).size()))};
         }
-        return this.classroomsForSubjects.get(subjectName).get(getRandomNumber(this.classroomsForSubjects.get(subjectName).size()));
+        return new Classroom[] {this.classroomsForSubjects.get(subjectName).get(getRandomNumber(this.classroomsForSubjects.get(subjectName).size()))};
     }
 
     /**

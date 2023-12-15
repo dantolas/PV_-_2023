@@ -1,0 +1,19 @@
+[
+  { "Name":"Programove Vybaveni - Cviceni", "Shortcut": "PV ", "Teachers": [{"shortcut":"Ma","name":"Ondrej Mandik","title":"Ing."},{"shortcut":"Re","name":"Alena Reichlova","title":"Mgr."},{"shortcut":"Pv","name":"Jan Pavlat","title":"Mgr."}] , "Hours": 2, "Classroom": [{"id":"18b","floor":3}], "Lab": 1},
+  { "Name":"Programove Vybaveni - Teorie", "Shortcut": "PV ", "Teachers": [{"shortcut":"Re","name":"Alena Reichlova","title":"Mgr."}] , "Hours": 1, "Classroom": [{"id":"24","floor":4}], "Lab": 0},
+  { "Name":"Pocitacove systemy a site - Cviceni", "Shortcut": "PSS", "Teachers": [{"shortcut":"Mo","name":"Jan Molic","title":""}] , "Hours": 2, "Classroom": [{"id":"8a","floor":2}], "Lab": 1},
+  { "Name":"Pocitacove systemy a site - Teorie", "Shortcut": "PSS", "Teachers": [{"shortcut":"Ma","name":"Lukas Masopust","title":"Ing.."}] , "Hours": 1, "Classroom": [{"id":"24","floor":4}], "Lab": 0},
+  { "Name":"Cesky Jazyk", "Shortcut": "C", "Teachers": [{"shortcut":"Su","name":"Kristina Studenkova","title":"MUDr."}] , "Hours": 3, "Classroom": [{"id":"24","floor":4}], "Lab": 0},
+  { "Name":"Aplikovana Matematika", "Shortcut": "AM ", "Teachers": [{"shortcut":"Kl","name":"Filip Kallmunzer","title":"Ing."}] , "Hours": 2, "Classroom": [{"id":"24","floor":4}], "Lab": 0},
+  { "Name":"Anglicky Jazyk", "Shortcut": "A", "Teachers": [{"shortcut":"Pa","name":"Sarka Paltikova","title":"Bc. Ing."}] , "Hours": 4, "Classroom": [{"id":"24","floor":4},{"id":"5b","floor":1},{"id":"5a","floor":1}], "Lab":0},
+  { "Name":"Telocvik", "Shortcut": "TV ", "Teachers": ["Mgr. Pavel Lopocha"] , "Hours": 2, "Classroom": [{"id":"TV","floor":0}], "Lab":1},
+  { "Name":"Webove Aplikace - Cviceni", "Shortcut": "WA ", "Teachers": [{"shortcut":"Pv/Na","name":"Jan Pavlat & Nykyta Narusevych","title":"Mgr."}] , "Hours": 2, "Classroom": [{"id":"17b","floor":3}], "Lab":1},  
+  { "Name":"Webove Aplikace - Teorie", "Shortcut": "WA ", "Teachers": [{"shortcut":"Pv","name":"Jan Pavlat","title":"Mgr."}] , "Hours": 1, "Classroom": [{"id":"24","floor":4}], "Lab":0},  
+  { "Name":"Matematika", "Shortcut": "M  ", "Teachers": [{"shortcut":"Ne","name":"Eva Neugebaurova","title":"Mgr."}] , "Hours": 4, "Classroom": [{"id":"24","floor":4}], "Lab":0},
+  { "Name":"Databazove Systemy - Cviceni", "Shortcut": "DS ", "Teachers": [{"shortcut":"Ka","name":"Ivana Kantnerova","title":"Ing."}] , "Hours": 2, "Classroom": [{"id":"18a","floor":3}], "Lab":1},
+  { "Name":"Databazove Systemy - Teorie", "Shortcut": "DS ", "Teachers": [{"shortcut":"ka","name":"Ivana Kantnerova","title":"ng."}] , "Hours": 1, "Classroom": [{"id":"24","floor":4}], "Lab":0},
+  { "Name":"Pocitacove Informacni Systemy - Cviceni", "Shortcut": "PIS", "Teachers": [{"shortcut":"Br/No","name":"Lucie Brcakova & Vit Nohejl","title":"Ing."}] , "Hours": 2, "Classroom": [{"id":"19a","floor":3}], "Lab": 1},
+  { "Name":"Pocitacove Informacni Systemy - Teorie", "Shortcut": "PIS", "Teachers": [{"shortcut":"Br","name":"Lucie Brcakova","title":"Ing."}] , "Hours": 2, "Classroom": [{"id":"24","floor":4}], "Lab": 0},
+  { "Name":"Technicky Projekt", "Shortcut": "TP ", "Teachers": [{"shortcut":"No","name":"Vit Nohejl","title":"Ing."}] , "Hours": 1, "Classroom": [{"id":"24","floor":4}], "Lab": 0},
+  { "Name":"Cviceni ze spravy IT", "Shortcut": "CIT", "Teachers": [{"shortcut":"Mz","name":"Jakub Mazuch","title":"Mgr."}] , "Hours": 2, "Classroom": [{"id":"19c","floor":3}], "Lab": 1}
+]
