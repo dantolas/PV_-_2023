@@ -45,31 +45,23 @@ public class SubjectFromJson {
 
 
 
-    public static ArrayList<SubjectFromJson> createFromJson(ArrayList<String> json){
+    public static SubjectFromJson[] createFromJson(String json){
         Gson gson = new Gson();
-        ArrayList<SubjectFromJson> subjects = new ArrayList<>();
-        for (String jsonLine : json) {
-            System.out.println("Creating from line:"+jsonLine);
-            SubjectFromJson subject = gson.fromJson(jsonLine, SubjectFromJson.class);
-            subjects.add(subject);
-        }
+        SubjectFromJson[] subjects = gson.fromJson(json, SubjectFromJson[].class);
         
         return subjects;
     }
-
-    public static ArrayList<String> readJsonFileToStringArray(String filepath) throws IOException,FileNotFoundException{
+//STOP NOW
+    public static String readJsonFileToString(String filepath) throws IOException,FileNotFoundException{
         File file = new File(filepath);
         BufferedReader reader = new BufferedReader(new FileReader(file));
 
-        ArrayList<String> jsonOutput = new ArrayList<>();
-        String line;
+        String jsonOutput = "";
+        String line;    
         
         while ((line = reader.readLine()) != null) {
-            if(line.equals("]")||line.equals("[")) continue;
-            jsonOutput.add(line.substring(0,line.length()-1));
+            jsonOutput+= line;    
         }
-        System.out.println("=======================================\n"+jsonOutput);
-        System.out.println("=====================================");
         reader.close();
         return jsonOutput;
     }

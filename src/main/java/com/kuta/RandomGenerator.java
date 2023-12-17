@@ -23,27 +23,26 @@ public class RandomGenerator implements Runnable{
         "Friday"
     };
 
-    private class SubjectNameAndLab{
+    private class SubjectCore{
         public String name;
+        public String shortcut;
         public boolean lab;
 
-        public SubjectNameAndLab(String name,boolean lab){
+        public SubjectCore(String name,String shortcut,boolean lab){
             this.name = name;
             this.lab = lab;
+            this.shortcut = shortcut;
         }
     }
 
-    private ArrayList<SubjectNameAndLab> subjectNames;
-    private HashMap<String,String> subjectShortcuts;
+    private ArrayList<SubjectCore> subjects;
     private HashMap<String,ArrayList<Teacher>> subjectTeachers;
     private HashMap<String,ArrayList<Classroom>> classroomsForSubjects;
     private HashMap<String,ArrayList<Classroom>> classroomsForLabSubjects;
 
     public RandomGenerator(){
-        subjectNames = new ArrayList<>() {{
-            add(new SubjectNameAndLab("Programove Vybaveni - Cviceni",true));
+        subjects = new ArrayList<>();
             
-        }};
     }
     
 
@@ -69,7 +68,7 @@ public class RandomGenerator implements Runnable{
      */
     public HashMap<String,ArrayList<Subject>> generateRandomSchedule(){
 
-    ArrayList<SubjectNameAndLab> subjects = this.subjectNames;
+    ArrayList<SubjectCore> subjects = this.subjects;
 
     HashMap<String,ArrayList<Subject>> schedule = new HashMap<>();
 
@@ -90,17 +89,17 @@ public class RandomGenerator implements Runnable{
         
         int i = 0;
         while(i < hours){
-            SubjectNameAndLab subjectName = subjectNames.get(getRandomNumber(this.subjectNames.size()));
+            // SubjectNameAndLab subjectName = subjectNames.get(getRandomNumber(this.subjectNames.size()));
 
-            Subject subject = new Subject(
-                subjectName.name,
-                this.subjectShortcuts.get(subjectName.name),
-                getRandomTeacherForSubject(subjectName.name),
-                getRandomClassroomForSubject(subjectName.name, subjectName.lab),
-                subjectName.lab
-            );
-            dailySchedule.add(subject);
-            i++;
+            // Subject subject = new Subject(
+            //     subjectName.name,
+            //     this.subjectShortcuts.get(subjectName.name),
+            //     getRandomTeacherForSubject(subjectName.name),
+            //     getRandomClassroomForSubject(subjectName.name, subjectName.lab),
+            //     subjectName.lab
+            // );
+            // dailySchedule.add(subject);
+            // i++;
         }
 
         schedule.put(day, dailySchedule);
