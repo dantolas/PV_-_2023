@@ -10,5 +10,13 @@ public Teacher(String name, String shortcut, String title) {
     this.name = name;
     this.shortcut = shortcut;
     this.title = title;
+}
+
+
+@Override
+public String toString() {
+    return title+name+" | Zkratka:"+shortcut;
 } 
+
+
 }

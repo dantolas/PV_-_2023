@@ -26,6 +26,11 @@ public class RandomGenerator implements Runnable{
     private class SubjectNameAndLab{
         public String name;
         public boolean lab;
+
+        public SubjectNameAndLab(String name,boolean lab){
+            this.name = name;
+            this.lab = lab;
+        }
     }
 
     private ArrayList<SubjectNameAndLab> subjectNames;
@@ -33,6 +38,13 @@ public class RandomGenerator implements Runnable{
     private HashMap<String,ArrayList<Teacher>> subjectTeachers;
     private HashMap<String,ArrayList<Classroom>> classroomsForSubjects;
     private HashMap<String,ArrayList<Classroom>> classroomsForLabSubjects;
+
+    public RandomGenerator(){
+        subjectNames = new ArrayList<>() {{
+            add(new SubjectNameAndLab("Programove Vybaveni - Cviceni",true));
+            
+        }};
+    }
     
 
     @Override
@@ -40,61 +52,61 @@ public class RandomGenerator implements Runnable{
         throw new UnsupportedOperationException("Unimplemented method 'run'");
     }
 
-    public RandomGenerator(){
-
-    }
-    
     /**
-     * Generates a completely random schedule, with random subject order, random teachers and random classrooms.
+     * Generates a completely random schedule, with random subject order, random
+     * teachers and random classrooms.
      * 
-     * Generation restrictions : 
-     *  - Only teachers that teach that subject will be chosen as subject teachers
-     *  - Only classrooms where a certain subject can be taught will be chosen
-     *  - Differentiates between practice and theory (lab = cviceni, !lab = teorie pro potreby skolniho rozvrhu)
-     *  - All subject quotas must be met (If PV is 2x a week, it must be 2x a week in a generated schedule)
+     * Generation restrictions :
+     * - Only teachers that teach that subject will be chosen as subject teachers
+     * - Only classrooms where a certain subject can be taught will be chosen
+     * - Differentiates between practice and theory (lab = cviceni, !lab = teorie
+     * pro potreby skolniho rozvrhu)
+     * - All subject quotas must be met (If PV is 2x a week, it must be 2x a week in
+     * a generated schedule)
      * 
-     * @return A Hashmap with days of the week as keys, and lists of .com.kuta.ubjects.Subject as values.
+     * @return A Hashmap with days of the week as keys, and lists of
+     *         .com.kuta.ubjects.Subject as values.
      */
     public HashMap<String,ArrayList<Subject>> generateRandomSchedule(){
 
-        ArrayList<SubjectNameAndLab> subjects = this.subjectNames;
+    ArrayList<SubjectNameAndLab> subjects = this.subjectNames;
 
-        HashMap<String,ArrayList<Subject>> schedule = new HashMap<>();
+    HashMap<String,ArrayList<Subject>> schedule = new HashMap<>();
 
-        for (String day : days) {
-            
-            ArrayList<Subject> dailySchedule = new ArrayList<>();            
+    for (String day : days) {
+        
+        ArrayList<Subject> dailySchedule = new ArrayList<>();            
 
-            if(subjects.size() == 0){
-                schedule.put(day, dailySchedule);
-                continue;
-            }
-
-            int hours = 0;
-            while(true){
-                hours = getRandomNumber(1,10);
-                if(subjects.size() - hours > 0) break;
-            }
-            
-            int i = 0;
-            while(i < hours){
-                SubjectNameAndLab subjectName = subjectNames.get(getRandomNumber(this.subjectNames.size()));
-
-                Subject subject = new Subject(
-                    subjectName.name,
-                    this.subjectShortcuts.get(subjectName.name),
-                    getRandomTeacherForSubject(subjectName.name),
-                    getRandomClassroomForSubject(subjectName.name, subjectName.lab),
-                    subjectName.lab
-                );
-                dailySchedule.add(subject);
-                i++;
-            }
-
+        if(subjects.size() == 0){
             schedule.put(day, dailySchedule);
+            continue;
         }
 
-        return schedule;
+        int hours = 0;
+        while(true){
+            hours = getRandomNumber(1,10);
+            if(subjects.size() - hours > 0) break;
+        }
+        
+        int i = 0;
+        while(i < hours){
+            SubjectNameAndLab subjectName = subjectNames.get(getRandomNumber(this.subjectNames.size()));
+
+            Subject subject = new Subject(
+                subjectName.name,
+                this.subjectShortcuts.get(subjectName.name),
+                getRandomTeacherForSubject(subjectName.name),
+                getRandomClassroomForSubject(subjectName.name, subjectName.lab),
+                subjectName.lab
+            );
+            dailySchedule.add(subject);
+            i++;
+        }
+
+        schedule.put(day, dailySchedule);
+    }
+
+    return schedule;
     }
 
     /**
