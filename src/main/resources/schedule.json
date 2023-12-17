@@ -6,7 +6,7 @@
   { "Name":"Cesky Jazyk", "Shortcut": "C", "Teachers": [{"shortcut":"Su","name":"Kristina Studenkova","title":"MUDr."}] , "Hours": 3, "Classroom": [{"id":"24","floor":4}], "Lab": 0},
   { "Name":"Aplikovana Matematika", "Shortcut": "AM ", "Teachers": [{"shortcut":"Kl","name":"Filip Kallmunzer","title":"Ing."}] , "Hours": 2, "Classroom": [{"id":"24","floor":4}], "Lab": 0},
   { "Name":"Anglicky Jazyk", "Shortcut": "A", "Teachers": [{"shortcut":"Pa","name":"Sarka Paltikova","title":"Bc. Ing."}] , "Hours": 4, "Classroom": [{"id":"24","floor":4},{"id":"5b","floor":1},{"id":"5a","floor":1}], "Lab":0},
-  { "Name":"Telocvik", "Shortcut": "TV ", "Teachers": ["Mgr. Pavel Lopocha"] , "Hours": 2, "Classroom": [{"id":"TV","floor":0}], "Lab":1},
+  { "Name":"Telocvik", "Shortcut": "TV ", "Teachers": [{"shortcut":"Lo","name":"Pavel Lopocha","title":"Mgr."}] , "Hours": 2, "Classroom": [{"id":"TV","floor":0}], "Lab":1},
   { "Name":"Webove Aplikace - Cviceni", "Shortcut": "WA ", "Teachers": [{"shortcut":"Pv/Na","name":"Jan Pavlat & Nykyta Narusevych","title":"Mgr."}] , "Hours": 2, "Classroom": [{"id":"17b","floor":3}], "Lab":1},  
   { "Name":"Webove Aplikace - Teorie", "Shortcut": "WA ", "Teachers": [{"shortcut":"Pv","name":"Jan Pavlat","title":"Mgr."}] , "Hours": 1, "Classroom": [{"id":"24","floor":4}], "Lab":0},  
   { "Name":"Matematika", "Shortcut": "M  ", "Teachers": [{"shortcut":"Ne","name":"Eva Neugebaurova","title":"Mgr."}] , "Hours": 4, "Classroom": [{"id":"24","floor":4}], "Lab":0},
