@@ -1,6 +1,10 @@
 package com.kuta;
 
+import java.util.Queue;
+
 public class Watchdog implements Runnable{
+
+    private Queue<Exception> exceptions;
 
     @Override
     public void run() {

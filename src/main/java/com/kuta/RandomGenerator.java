@@ -1,15 +1,21 @@
 package com.kuta;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.random.*;
 
 
 import com.kuta.objects.Classroom;
 import com.kuta.objects.Subject;
+import com.kuta.objects.SubjectFromJson;
 import com.kuta.objects.Teacher;
 
 
@@ -40,15 +46,58 @@ public class RandomGenerator implements Runnable{
     private HashMap<String,ArrayList<Classroom>> classroomsForSubjects;
     private HashMap<String,ArrayList<Classroom>> classroomsForLabSubjects;
 
-    public RandomGenerator(){
-        subjects = new ArrayList<>();
+
+    private Queue<HashMap<String,ArrayList<Subject>>> completedSchedules;
+
+    public RandomGenerator(ConcurrentLinkedQueue<HashMap<String,ArrayList<Subject>>> scheduleQueue) throws FileNotFoundException, IOException{
+        this.subjects = new ArrayList<>();
+        this.subjectTeachers = new HashMap<>();
+        this.classroomsForLabSubjects = new HashMap<>();
+        this.classroomsForSubjects = new HashMap<>();
+        this.completedSchedules = scheduleQueue;
+
+        
+        String localDirectory = System.getProperty("user.dir");
+        String json = SubjectFromJson.readJsonFileToString(localDirectory+"/src/main/resources/schedule.json");
+        SubjectFromJson[] loadedSubjects = SubjectFromJson.createFromJson(json);
+
+        for (SubjectFromJson subjectFromJson : loadedSubjects) {
+            SubjectCore newCore = new SubjectCore(subjectFromJson.name, subjectFromJson.shortcut, (subjectFromJson.lab == 1));
+            for(int i = 0; i < subjectFromJson.hours; i++){
+                subjects.add(newCore);
+            }
+
+            subjectTeachers.put(newCore.name, subjectFromJson.teachers);
+
+            if(newCore.lab){
+                classroomsForLabSubjects.put(newCore.name, subjectFromJson.classrooms);
+                return;
+            }
+
+            classroomsForSubjects.put(newCore.name, subjectFromJson.classrooms);
+
+        }
+
             
     }
     
 
     @Override
     public void run() {
-        throw new UnsupportedOperationException("Unimplemented method 'run'");
+        HashMap<String,ArrayList<Subject>> schedule;
+        HashSet<HashMap<String,ArrayList<Subject>>> generatedSchedules = new HashSet<>();
+        while (true) {
+             schedule = generateRandomSchedule();
+             if(!generatedSchedules.contains(schedule)){
+                generatedSchedules.add(schedule);
+             }
+
+             if(generatedSchedules.size() == 100_000){
+                for (HashMap<String,ArrayList<Subject>> uniqueSchedule : generatedSchedules) {
+                    completedSchedules.add(uniqueSchedule);
+                }
+             }
+        }
     }
 
     /**
@@ -88,33 +137,36 @@ public class RandomGenerator implements Runnable{
         }
         
         int i = 0;
+        SubjectCore core;
+        int randomNumber;
+
         while(i < hours){
             // SubjectNameAndLab subjectName = subjectNames.get(getRandomNumber(this.subjectNames.size()));
+            randomNumber = getRandomNumber(subjects.size());
+            core = subjects.get(randomNumber);
+            subjects.remove(randomNumber);
+            
 
-            // Subject subject = new Subject(
-            //     subjectName.name,
-            //     this.subjectShortcuts.get(subjectName.name),
-            //     getRandomTeacherForSubject(subjectName.name),
-            //     getRandomClassroomForSubject(subjectName.name, subjectName.lab),
-            //     subjectName.lab
-            // );
-            // dailySchedule.add(subject);
-            // i++;
+            Subject subject = new Subject(
+                core.name,
+                core.shortcut,
+                getRandomTeacherForSubject(core.name),
+                getRandomClassroomForSubject(core.name, core.lab),
+                core.lab
+            );
+            dailySchedule.add(subject);
+            i++;
+        }
+
+        while (dailySchedule.size() < 10) {
+            randomNumber = getRandomNumber(10);
+            dailySchedule.add(randomNumber,null);
         }
 
         schedule.put(day, dailySchedule);
     }
 
     return schedule;
-    }
-
-    /**
-     * Generate random number
-     * @param range 
-     * @return - Random integer in given range ranging (0,range-1)
-     */
-    private int getRandomNumber(int range){
-        return (int)Math.floor(Math.random() * (range));
     }
 
     /**
@@ -128,11 +180,14 @@ public class RandomGenerator implements Runnable{
         return this.subjectTeachers.get(subjectname).get(getRandomNumber(subjectTeachers.get(subjectname).size()));
     }
 
-    private Classroom[] getRandomClassroomForSubject(String subjectName,boolean lab){
+    private Classroom getRandomClassroomForSubject(String subjectName,boolean lab){
+        ArrayList<Classroom> possibleClassrooms;
         if(lab){
-            return new Classroom[] {this.classroomsForLabSubjects.get(subjectName).get(getRandomNumber(this.classroomsForLabSubjects.get(subjectName).size()))};
+            possibleClassrooms = this.classroomsForLabSubjects.get(subjectName);
+            return possibleClassrooms.get(getRandomNumber(possibleClassrooms.size()));
         }
-        return new Classroom[] {this.classroomsForSubjects.get(subjectName).get(getRandomNumber(this.classroomsForSubjects.get(subjectName).size()))};
+        possibleClassrooms = this.classroomsForSubjects.get(subjectName);
+        return possibleClassrooms.get(getRandomNumber(possibleClassrooms.size()));
     }
 
     /**
@@ -144,5 +199,14 @@ public class RandomGenerator implements Runnable{
      */
     private int getRandomNumber(int min,int max){
         return (int)Math.floor(Math.random() * (max)+min);
+    }
+
+    /**
+     * Generate random number
+     * @param range 
+     * @return - Random integer in given range ranging (0,range-1)
+     */
+    private int getRandomNumber(int range){
+        return (int)Math.floor(Math.random() * (range));
     }
 }
