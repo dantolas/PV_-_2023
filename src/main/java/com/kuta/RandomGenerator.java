@@ -12,6 +12,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.random.*;
 
+import javax.management.Query;
 
 import com.kuta.objects.Classroom;
 import com.kuta.objects.Subject;
@@ -39,6 +40,13 @@ public class RandomGenerator implements Runnable{
             this.lab = lab;
             this.shortcut = shortcut;
         }
+
+        @Override
+        public String toString() {
+            return "SubjectCore [name=" + name + ", shortcut=" + shortcut + ", lab=" + lab + "]";
+        }
+
+        
     }
 
     private ArrayList<SubjectCore> subjects;
@@ -47,18 +55,18 @@ public class RandomGenerator implements Runnable{
     private HashMap<String,ArrayList<Classroom>> classroomsForLabSubjects;
 
 
-    private Queue<HashMap<String,ArrayList<Subject>>> completedSchedules;
+    private Queue<HashMap<String,ArrayList<Subject>>> scheduleQueue;
 
-    public RandomGenerator(ConcurrentLinkedQueue<HashMap<String,ArrayList<Subject>>> scheduleQueue) throws FileNotFoundException, IOException{
+    public RandomGenerator(ConcurrentLinkedQueue<HashMap<String,ArrayList<Subject>>> scheduleQueue,String relativeFilePath) throws FileNotFoundException, IOException{
         this.subjects = new ArrayList<>();
         this.subjectTeachers = new HashMap<>();
         this.classroomsForLabSubjects = new HashMap<>();
         this.classroomsForSubjects = new HashMap<>();
-        this.completedSchedules = scheduleQueue;
+        this.scheduleQueue = scheduleQueue;
 
         
         String localDirectory = System.getProperty("user.dir");
-        String json = SubjectFromJson.readJsonFileToString(localDirectory+"/src/main/resources/schedule.json");
+        String json = SubjectFromJson.readJsonFileToString(localDirectory+relativeFilePath);
         SubjectFromJson[] loadedSubjects = SubjectFromJson.createFromJson(json);
 
         for (SubjectFromJson subjectFromJson : loadedSubjects) {
@@ -71,7 +79,7 @@ public class RandomGenerator implements Runnable{
 
             if(newCore.lab){
                 classroomsForLabSubjects.put(newCore.name, subjectFromJson.classrooms);
-                return;
+                continue;
             }
 
             classroomsForSubjects.put(newCore.name, subjectFromJson.classrooms);
@@ -85,19 +93,25 @@ public class RandomGenerator implements Runnable{
     @Override
     public void run() {
         HashMap<String,ArrayList<Subject>> schedule;
-        HashSet<HashMap<String,ArrayList<Subject>>> generatedSchedules = new HashSet<>();
-        while (true) {
-             schedule = generateRandomSchedule();
-             if(!generatedSchedules.contains(schedule)){
+        Queue<HashMap<String,ArrayList<Subject>>> generatedSchedules = new LinkedList<>();
+        int i = 100_000;
+        System.out.println("Generator started.");
+        while (i > 0) {
+                schedule = generateRandomSchedule();
+                System.out.println("Generated schedule:\n"+i);
                 generatedSchedules.add(schedule);
-             }
+                System.out.println("Added schedule:"+i);
 
-             if(generatedSchedules.size() == 100_000){
-                for (HashMap<String,ArrayList<Subject>> uniqueSchedule : generatedSchedules) {
-                    completedSchedules.add(uniqueSchedule);
+                if(generatedSchedules.size() % 10_000 == 0){
+                    System.out.println("#######ADDING TO QUEUE########");
+                    scheduleQueue.addAll(generatedSchedules);
+                    generatedSchedules.clear();
+                    System.out.println("Queue size:"+scheduleQueue.size());
                 }
-             }
+                i--;
+                
         }
+        
     }
 
     /**
@@ -107,8 +121,7 @@ public class RandomGenerator implements Runnable{
      * Generation restrictions :
      * - Only teachers that teach that subject will be chosen as subject teachers
      * - Only classrooms where a certain subject can be taught will be chosen
-     * - Differentiates between practice and theory (lab = cviceni, !lab = teorie
-     * pro potreby skolniho rozvrhu)
+     * - Differentiates between practice and theory
      * - All subject quotas must be met (If PV is 2x a week, it must be 2x a week in
      * a generated schedule)
      * 
@@ -117,7 +130,7 @@ public class RandomGenerator implements Runnable{
      */
     public HashMap<String,ArrayList<Subject>> generateRandomSchedule(){
 
-    ArrayList<SubjectCore> subjects = this.subjects;
+    ArrayList<SubjectCore> subjectsCopy = this.subjects;
 
     HashMap<String,ArrayList<Subject>> schedule = new HashMap<>();
 
@@ -125,7 +138,7 @@ public class RandomGenerator implements Runnable{
         
         ArrayList<Subject> dailySchedule = new ArrayList<>();            
 
-        if(subjects.size() == 0){
+        if(subjectsCopy.size() == 0){
             schedule.put(day, dailySchedule);
             continue;
         }
@@ -133,7 +146,7 @@ public class RandomGenerator implements Runnable{
         int hours = 0;
         while(true){
             hours = getRandomNumber(1,10);
-            if(subjects.size() - hours > 0) break;
+            if((subjectsCopy.size() - hours) > 0) break;
         }
         
         int i = 0;
@@ -141,10 +154,9 @@ public class RandomGenerator implements Runnable{
         int randomNumber;
 
         while(i < hours){
-            // SubjectNameAndLab subjectName = subjectNames.get(getRandomNumber(this.subjectNames.size()));
-            randomNumber = getRandomNumber(subjects.size());
-            core = subjects.get(randomNumber);
-            subjects.remove(randomNumber);
+            randomNumber = getRandomNumber(subjectsCopy.size());
+            core = subjectsCopy.get(randomNumber);
+            subjectsCopy.remove(randomNumber);
             
 
             Subject subject = new Subject(
@@ -159,13 +171,26 @@ public class RandomGenerator implements Runnable{
         }
 
         while (dailySchedule.size() < 10) {
-            randomNumber = getRandomNumber(10);
+            randomNumber = getRandomNumber(dailySchedule.size());
             dailySchedule.add(randomNumber,null);
         }
-
+        
         schedule.put(day, dailySchedule);
     }
 
+    while(subjectsCopy.size() > 0){
+        ArrayList<Subject> randomSchedule = schedule.get(days[getRandomNumber(days.length)]);
+
+        for (int i = 0; i < randomSchedule.size(); i++) {
+            if(randomSchedule.get(i) == null){
+            SubjectCore core = subjectsCopy.get(0);
+            Subject subject = new Subject(core.name,core.shortcut,getRandomTeacherForSubject(core.name),getRandomClassroomForSubject(core.name, core.lab),core.lab);
+            subjectsCopy.remove(0);
+            randomSchedule.set(i,subject);
+            break;
+            }
+        }
+    }
     return schedule;
     }
 
