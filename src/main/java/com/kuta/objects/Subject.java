@@ -72,7 +72,31 @@ public class Subject {
 
     @Override
     public String toString() {
-        return "| "+this.name+" | "+this.shortcut+" | "+this.teacher+" | "+this.classroom+" | "+" | "+this.lab;
+        StringBuilder builder = new StringBuilder();
+        String[] variables = {
+            this.name,
+            this.shortcut,
+            this.teacher.toString(),
+            this.classroom.toString(),
+        };
+
+        int[] spaceBuffer = {
+            40,
+            5,
+            40,
+            12
+        };
+
+        for (int i = 0; i < spaceBuffer.length; i++) {
+            builder.append("| ");
+            builder.append(variables[i]);
+            for (int j =0 ; j < spaceBuffer[i]-variables[i].length(); j++) {
+                builder.append(" ");
+            }
+            builder.append("|");
+
+        }
+        return builder.toString();
     }
 
     
