@@ -10,6 +10,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.*;
 import java.util.random.*;
 
 import javax.management.Query;
@@ -19,8 +23,23 @@ import com.kuta.objects.Subject;
 import com.kuta.objects.SubjectFromJson;
 import com.kuta.objects.Teacher;
 
-
+/**
+ * This class generates completely random Schedules.
+ * It firsts loads all the information necessary for schedule generation from a JSON file,
+ * and starts generating random schedules up to a certain limit.
+ * 
+ * This method of generating is very inneficient, slow and consumes a lot of memory.
+ * It isn't supposed to be optimal, it's just meant to be random.
+ * There is an upper limit to the amount that can be generated this way, that depends
+ * on the power of system hardware.
+ */
 public class RandomGenerator implements Runnable{
+
+    private Lock lock;
+    private AtomicInteger schedulesGeneratedCount;
+    private final int GENERATION_LIMIT = 10_000_000;
+    private final int ADD_TO_QUEUE_THRESHOLD = 50_000;
+    
 
     private final String[] days = {
         "Monday",
@@ -57,12 +76,15 @@ public class RandomGenerator implements Runnable{
 
     private Queue<HashMap<String,ArrayList<Subject>>> scheduleQueue;
 
-    public RandomGenerator(ConcurrentLinkedQueue<HashMap<String,ArrayList<Subject>>> scheduleQueue,String relativeFilePath) throws FileNotFoundException, IOException{
+    public RandomGenerator(ConcurrentLinkedQueue<HashMap<String,ArrayList<Subject>>> scheduleQueue,String relativeFilePath, Lock lock, AtomicInteger schedulesGeneratedCount) throws FileNotFoundException, IOException{
         this.subjects = new ArrayList<>();
         this.subjectTeachers = new HashMap<>();
         this.classroomsForLabSubjects = new HashMap<>();
         this.classroomsForSubjects = new HashMap<>();
         this.scheduleQueue = scheduleQueue;
+
+        this.lock = lock;
+        this.schedulesGeneratedCount = schedulesGeneratedCount;
 
         
         String localDirectory = System.getProperty("user.dir");
@@ -94,24 +116,41 @@ public class RandomGenerator implements Runnable{
     public void run() {
         HashMap<String,ArrayList<Subject>> schedule;
         Queue<HashMap<String,ArrayList<Subject>>> generatedSchedules = new LinkedList<>();
-        int i = 100_000;
-        System.out.println("Generator started.");
-        while (i > 0) {
-                schedule = generateRandomSchedule();
-                System.out.println("Generated schedule:\n"+i);
-                generatedSchedules.add(schedule);
-                System.out.println("Added schedule:"+i);
+        int repetitions = GENERATION_LIMIT;
 
-                if(generatedSchedules.size() % 10_000 == 0){
-                    System.out.println("#######ADDING TO QUEUE########");
+        int i = 0;
+        int hours = 0;
+        int randomNumber = 0;
+        System.out.println("Generator started.");
+        try {
+            while (repetitions > 0) {
+                schedule = generateRandomSchedule(hours,i,randomNumber);
+                //System.out.println("Generated schedule:"+i);
+                generatedSchedules.add(schedule);
+
+                if(generatedSchedules.size() % ADD_TO_QUEUE_THRESHOLD == 0){
                     scheduleQueue.addAll(generatedSchedules);
                     generatedSchedules.clear();
-                    System.out.println("Queue size:"+scheduleQueue.size());
+                    try {
+                        if(lock.tryLock(10, TimeUnit.SECONDS)){
+                            schedulesGeneratedCount.addAndGet(ADD_TO_QUEUE_THRESHOLD);
+                            
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }finally{
+                        //release lock
+                        lock.unlock();
+                    }
+
                 }
-                i--;
-                
+
+                if(i % 1_000_000 == 0) System.gc();
+                i--;  
         }
-        
+        } catch (OutOfMemoryError e) {
+            System.out.println("Generator has run out of heap memory space, and will now shut down.");
+        }
     }
 
     /**
@@ -128,7 +167,7 @@ public class RandomGenerator implements Runnable{
      * @return A Hashmap with days of the week as keys, and lists of
      *         .com.kuta.ubjects.Subject as values.
      */
-    public HashMap<String,ArrayList<Subject>> generateRandomSchedule(){
+    public HashMap<String,ArrayList<Subject>> generateRandomSchedule(int hours,int i,int randomNumber){
 
     ArrayList<SubjectCore> subjectsCopy = this.subjects;
 
@@ -143,15 +182,14 @@ public class RandomGenerator implements Runnable{
             continue;
         }
 
-        int hours = 0;
+        hours = 0;
         while(true){
             hours = getRandomNumber(1,10);
             if((subjectsCopy.size() - hours) > 0) break;
         }
         
-        int i = 0;
+        i = 0;
         SubjectCore core;
-        int randomNumber;
 
         while(i < hours){
             randomNumber = getRandomNumber(subjectsCopy.size());
@@ -181,7 +219,7 @@ public class RandomGenerator implements Runnable{
     while(subjectsCopy.size() > 0){
         ArrayList<Subject> randomSchedule = schedule.get(days[getRandomNumber(days.length)]);
 
-        for (int i = 0; i < randomSchedule.size(); i++) {
+        for (i = 0; i < randomSchedule.size(); i++) {
             if(randomSchedule.get(i) == null){
             SubjectCore core = subjectsCopy.get(0);
             Subject subject = new Subject(core.name,core.shortcut,getRandomTeacherForSubject(core.name),getRandomClassroomForSubject(core.name, core.lab),core.lab);
