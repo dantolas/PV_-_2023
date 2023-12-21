@@ -3,21 +3,13 @@ package com.kuta;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.*;
-import java.util.random.*;
-
-import javax.management.Query;
-
 import com.kuta.objects.Classroom;
 import com.kuta.objects.Subject;
 import com.kuta.objects.SubjectFromJson;
