@@ -11,9 +11,6 @@ public class Classroom {
         this.floor = floorNumber;
     }
 
-
-    
-
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -51,6 +48,20 @@ public class Classroom {
     @Override
     public String toString() {
         return id+" | Patro:"+floor;
+    }
+
+
+
+
+    public String getId() {
+        return id;
+    }
+
+
+
+
+    public int getFloor() {
+        return floor;
     }
 
     

@@ -99,6 +99,26 @@ public class Subject {
         return builder.toString();
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getShortcut() {
+        return shortcut;
+    }
+
+    public Teacher getTeacher() {
+        return teacher;
+    }
+
+    public Classroom getClassroom() {
+        return classroom;
+    }
+
+    public boolean isLab() {
+        return lab;
+    }
+
     
 
     
