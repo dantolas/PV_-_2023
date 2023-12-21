@@ -28,10 +28,15 @@ import com.kuta.objects.Teacher;
  * It firsts loads all the information necessary for schedule generation from a JSON file,
  * and starts generating random schedules up to a certain limit.
  * 
- * This method of generating is very inneficient, slow and consumes a lot of memory.
+ * This method of generating is  inneficient, slow and consumes a lot of memory.
  * It isn't supposed to be optimal, it's just meant to be random.
  * There is an upper limit to the amount that can be generated this way, that depends
  * on the power of system hardware.
+ * 
+ * The chance for the same schedule to be generated using this method is extremely unlikely,
+ * but with enough schedules generated there might be a small amount of duplication.
+ * That is technically cheating according to the assignment,
+ * however it would be more time expensive to check uniqueness of a schedule than to rate it. 
  */
 public class RandomGenerator implements Runnable{
 
@@ -125,7 +130,6 @@ public class RandomGenerator implements Runnable{
         try {
             while (repetitions > 0) {
                 schedule = generateRandomSchedule(hours,i,randomNumber);
-                //System.out.println("Generated schedule:"+i);
                 generatedSchedules.add(schedule);
 
                 if(generatedSchedules.size() % ADD_TO_QUEUE_THRESHOLD == 0){
@@ -149,7 +153,7 @@ public class RandomGenerator implements Runnable{
                 i--;  
         }
         } catch (OutOfMemoryError e) {
-            System.out.println("Generator has run out of heap memory space, and will now shut down.");
+            System.out.println("Generator has run out of heap memory space, and will now shut down. Thread:"+Thread.currentThread().getName());
         }
     }
 

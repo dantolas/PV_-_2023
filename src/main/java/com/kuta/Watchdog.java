@@ -1,6 +1,7 @@
 package com.kuta;
 
 
+import java.text.DecimalFormat;
 import java.util.Queue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -8,12 +9,15 @@ import java.util.concurrent.locks.*;;
 
 public class Watchdog implements Runnable{
 
+    
     private Lock lock;
 
     private final int MAX_RUNTIME_IN_MINUTES = Config.MAX_RUNTIME_IN_MINUTES;
-    private Queue<Exception> exceptionsToHandle;
     private long startTime;
-    private AtomicInteger schedulesGenerated;
+
+    private Queue<Exception> exceptionsToHandle;
+    private AtomicInteger randomSchedulesGenerated;
+    private AtomicInteger schedulesPermutated;
     private int schedulesRated;
 
     private ArrayList<Runnable> GENERATOR_POOL;
@@ -25,11 +29,22 @@ public class Watchdog implements Runnable{
 
 
 
-    public Watchdog(Lock lock, AtomicInteger schedulesGenerated) {
+    public Watchdog(Lock lock, AtomicInteger randomSchedulesGenerated) {
         this.lock = lock;
-        this.schedulesGenerated = schedulesGenerated;
+        this.randomSchedulesGenerated = randomSchedulesGenerated;
 
-        this.startTime = System.currentTimeMillis();
+    }
+
+    public Watchdog(AtomicInteger schedulesPermutated,Lock lock) {
+        this.lock = lock;
+        this.schedulesPermutated = schedulesPermutated;
+
+    }
+
+    public Watchdog(Lock lock, AtomicInteger schedulesPermutated,AtomicInteger randomSchedulesGenerated) {
+        this.lock = lock;
+        this.randomSchedulesGenerated = randomSchedulesGenerated;
+        this.schedulesPermutated = schedulesPermutated;
     }
 
 
@@ -40,6 +55,7 @@ public class Watchdog implements Runnable{
     @Override
     public void run() {
 
+        this.startTime = System.currentTimeMillis();
         int runtimeInSeconds = 0;
 
         try {
@@ -56,7 +72,7 @@ public class Watchdog implements Runnable{
                 System.out.print("Runtime:" + runtimeInSeconds + "s | ");
                 try {
                     if (lock.tryLock(10, TimeUnit.SECONDS)) {
-                        System.out.println("Schedules generated:" + schedulesGenerated);
+                        System.out.println("Schedules generated:" + (String.format("%,d", schedulesPermutated.get())));
                     }
                 } catch (InterruptedException e) {
                     e.printStackTrace();
