@@ -58,6 +58,24 @@ public boolean equals(Object obj) {
 @Override
 public String toString() {
     return title+name+" | Zkratka:"+shortcut;
+}
+
+
+
+public String getName() {
+    return name;
+}
+
+
+
+public String getShortcut() {
+    return shortcut;
+}
+
+
+
+public String getTitle() {
+    return title;
 } 
 
 

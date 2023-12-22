@@ -1,19 +1,12 @@
 package com.kuta;
 
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-
-import com.kuta.objects.Classroom;
-import com.kuta.objects.Subject;
-import com.kuta.objects.Teacher;
 
 /**
  * This class generates different permutations of my school schedule
@@ -28,19 +21,14 @@ import com.kuta.objects.Teacher;
  * 
  */
 public class PermutationGenerator implements Runnable{
-    
-    public final byte[][] INITIAL_SCHEDULE = {
-        {0b00001000,0b00001001,0b00000100,0b00000110,0b00001010,0b1111111,0b00000000,0b00000000,0b1111111,0b1111111},
-        {0b00001010,0b00001111,0b00001011,0b00001011,0b00000110,0b00000101,0b1111111,0b00000111,0b1111111,0b1111111},
-        {0b00001110,0b00000100,0b00010000,0b00010000,0b00000101,0b00001010,0b00001100,0b1111111,0b1111111,0b1111111,},
-        {0b00001001,0b00001010,0b00001110,0b00000001,0b00000110,0b00000100,0b00000011,0b1111111,0b1111111,0b1111111},
-        {0b1111111,0b00001101,0b00001101,0b00000110,0b00000111,0b00000010,0b00000010,0b1111111,0b1111111,0b1111111}
-    };
 
+    private final byte[][] INITIAL_SCHEDULE = Config.INITIAL_SCHEDULE;
+    
     private final int ADD_TO_QUEUE_THRESHOLD = 10_000;
 
-    private Lock lock;
     private AtomicInteger schedulesGeneratedCount;
+    private AtomicBoolean THREAD_STOP_ORDER;
+    private AtomicBoolean KEEP_GENERATING;
 
     private final ArrayList<Queue<byte[]>> UNIQUE_DAY_PERMUTATIONS = new ArrayList<>() {{
         add(new LinkedList<byte[]>());
@@ -57,10 +45,14 @@ public class PermutationGenerator implements Runnable{
      * @param schedulesGeneratedCount - Variable to store the amount of generated schedules
      * @param generatedSchedules - Shared space for accessing and adding generated schedules
      */
-    public PermutationGenerator(Lock lock,AtomicInteger schedulesGeneratedCount, ConcurrentLinkedQueue<byte[][]> generatedSchedules){
-        this.lock = lock;
+    public PermutationGenerator(
+        AtomicInteger schedulesGeneratedCount, ConcurrentLinkedQueue<byte[][]> generatedSchedules,
+        AtomicBoolean THREAD_STOP_ORDER, AtomicBoolean KEEP_GENERATING){
+        this.KEEP_GENERATING = KEEP_GENERATING;
         this.schedulesGeneratedCount = schedulesGeneratedCount;
         this.generatedSchedules = generatedSchedules;
+
+        this.THREAD_STOP_ORDER = THREAD_STOP_ORDER;
     }
    
 
@@ -86,6 +78,7 @@ public class PermutationGenerator implements Runnable{
             return null;
         }
 
+
         return newSchedule;
     }
 
@@ -103,12 +96,17 @@ public class PermutationGenerator implements Runnable{
 
             while (true) {
 
+                if(!KEEP_GENERATING.get()) continue;
+
+                if(THREAD_STOP_ORDER.get()) break;
 
                 byte[][] scheduleFromDayPermutation = generateScheduleFromDayPermutation(dayPermutationsCopy,i);
                 if(scheduleFromDayPermutation == null) break;
 
+                
 
-                generatedSchedulesTempHolder.offer(scheduleFromDayPermutation);
+
+                generatedSchedulesTempHolder.offer(clone2DArray(scheduleFromDayPermutation));
                 if(generatedSchedulesTempHolder.size()% ADD_TO_QUEUE_THRESHOLD == 0){
                     this.generatedSchedules.addAll(generatedSchedulesTempHolder);
                     addToScheduleCount(generatedSchedulesTempHolder.size());
@@ -150,9 +148,19 @@ public class PermutationGenerator implements Runnable{
 
         i = 1;
         while (i < n) {
+
+            if(!KEEP_GENERATING.get()) continue;
+            if(THREAD_STOP_ORDER.get()) break;
+
+
             if(c[i] < i){
                 if(i%2==0) swap(daySchedule, 0, i);
                 else swap(daySchedule, c[i], i);
+
+                byte[] copy = new byte[daySchedule.length]; 
+                for (int k = 0; k < copy.length; k++) { 
+                    copy[k] = daySchedule[k]; 
+                } 
 
                 c[i]++;
                 i=1;
@@ -176,9 +184,11 @@ public class PermutationGenerator implements Runnable{
     private void generateDayPermutationsForAllDays(){
         Queue<byte[]> generatedDayPermutationsTempHolder = new LinkedList<>();
         for(int i = 0;i < INITIAL_SCHEDULE.length; i++){
+
+            if(THREAD_STOP_ORDER.get()) break;
+
             generateDayPermutations(10, INITIAL_SCHEDULE[i],generatedDayPermutationsTempHolder);
             this.UNIQUE_DAY_PERMUTATIONS.get(i).addAll(generatedDayPermutationsTempHolder);
-            generatedDayPermutationsTempHolder.clear();
         }
     }
 
@@ -207,7 +217,6 @@ public class PermutationGenerator implements Runnable{
         for(int dayIndex = 0; dayIndex < 5;dayIndex++){
             if(dayIndex == currentDay) continue;
             if(permutationsCopy.get(dayIndex).peek() == null){
-                System.out.println("Permutation queue empty"+dayIndex);
                 return null;
             }
             byte[] dayPermutation = Arrays.copyOf(permutationsCopy.get(dayIndex).poll(),10);
@@ -247,8 +256,10 @@ public class PermutationGenerator implements Runnable{
             }
                         
             while (true) {
+                if(THREAD_STOP_ORDER.get()) break;
+
                 byte[][] scheduleFromInitialDay = generateCombination(i,permutationsCopy);
-                if(scheduleFromInitialDay == null){ System.out.println("Break");break;}          
+                if(scheduleFromInitialDay == null){ break;}          
                 generatedSchedulesTempHolder.offer(scheduleFromInitialDay);
 
                 if(generatedSchedulesTempHolder.size() >= ADD_TO_QUEUE_THRESHOLD){
@@ -324,16 +335,24 @@ public class PermutationGenerator implements Runnable{
      * @param n - Amount to add
      */
     private void addToScheduleCount(int n){
-        try {
-            if(lock.tryLock(10, TimeUnit.SECONDS)){
-                schedulesGeneratedCount.addAndGet(n);
-                
+        schedulesGeneratedCount.addAndGet(n);
             }
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }finally{
-            //release lock
-            lock.unlock();
+
+    /**Creates an independent copy(clone) of the boolean array.
+     * @param array The array to be cloned.
+     * @return An independent 'deep' structure clone of the array.
+     */
+    public byte[][] clone2DArray(byte[][] array) {
+        int rows=array.length ;
+        //int rowIs=array[0].length ;
+
+        //clone the 'shallow' structure of array
+        byte[][] newArray =(byte[][]) array.clone();
+        //clone the 'deep' structure of array
+        for(int row=0;row<rows;row++){
+            newArray[row]=(byte[]) array[row].clone();
         }
+
+        return newArray;
     }
 }

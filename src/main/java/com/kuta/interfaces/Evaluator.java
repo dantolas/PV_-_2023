@@ -11,6 +11,8 @@ public interface Evaluator {
 
     public int rateLessonAmount(byte[][] schedule);
 
+    public int rateLabsTogether(byte[][] schedule);
+
     public int rateImportantSubjectPlacement(byte[][] schedule);
 
     public int rateScheduleInterruptions(byte[][] schedule);
@@ -19,5 +21,7 @@ public interface Evaluator {
 
     public int rateMyWellbeing(byte[][] schedule);
 
-    public void rateSchedule(byte[][] schedule);
+    public int[] rateSchedule(byte[][] schedule);
+
+    public void handleSchedule(byte[][] schedule);
 }
