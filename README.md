@@ -14,4 +14,9 @@ Ve slozce **START_HERE** naleznete STARTME.jar java archiv, ktery lze spustit z 
 java -jar STARTME.jar
 ```
 
-###
+### Poznamka
+Ukol jsem nestihl splnit, zvolil jsem spatnou strukturu programu, bohuzel jsem si toho vsiml az ke konci casove lhuty velice pozde. 
+
+Vim ze body za snahu v realnem svete neexistuji, ale doufam ze tady mi treba trosicku pomohou.
+
+
